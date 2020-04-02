@@ -1,34 +1,24 @@
 <template>
   <div id="secure">
+    <img class="logo-two" src="../assets/c19-logo.jpg" alt="c19 logo" />
     <div>
       <h1>Patient List - {{ search }}</h1>
-      <h2>Search Your Patient Below</h2>
-      <input id="bubbles" type="text" v-model="search" 
-       placeholder="Patient Name" />
+      <h4>Patient Search</h4>
+      <input id="bubbles" type="text" v-model="search" placeholder="Patient Name" />
       <!-- <button id="bubbles-two" type="button" v-on:click="patientSearch()">Search</button> -->
-      <router-link to="/new_patient">Or Add a New Patient</router-link>
+      <h5>If patient not found</h5>
+      <router-link to="/new_patient" id="new-patient">Add New Patient</router-link>
     </div>
 
     <!-- If Search Returns Results, Run This Table -->
     <div v-if="search">
       <div class="table-responsive">
             <table class="table-hover">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Phone Number</th>
-                        <th>City</th>
-                        <th>Symptoms</th>
-                        <th>Infected</th>
-                        <th>Treatment</th>
-                        <th>Admitted</th>
-                        <th>Doctor</th>
-                    </tr>
-                </thead>
+                <!-- removed table header here so that the header does NOT duplicate -->
                 <tbody>
                     <td> {{patients.id}} </td>
                     <td> {{patients.name}} </td>
+                    <td> {{patients.lastName}} </td>
                     <td> {{patients.phone_number}} </td>
                     <td> {{patients.city}} </td>
                     <td> {{patients.symptoms}} </td>
@@ -47,9 +37,10 @@
         <table class="table-hover">
           <thead>
             <tr>
-              <td> </td>
+              <td></td>
               <th>Id</th>
-              <th>Name</th>
+              <th>First Name</th>
+              <th>Last Name</th>
               <th>Phone Number</th>
               <th>City</th>
               <th>Symptoms</th>
@@ -62,11 +53,15 @@
           <tbody>
             <tr v-for="item in filteredPatients" :key="item.id" :data-id="item.id">
               <td>
-                <button v-on:click="deletePatient(item.id)" v-bind:id="item.id" class="btn btn-success" >Delete Patient {{ item.id }} </button>
+                <button
+                  v-on:click="deletePatient(item.id)"
+                  v-bind:id="item.id"
+                  class="btn btn-success"
+                >Delete Patient {{ item.id }}</button>
               </td>
-
               <td>{{ item.id }}</td>
               <td>{{ item.name }}</td>
+              <td>{{ item.lastName }}</td>
               <td>{{ item.phone_number }}</td>
               <td>{{ item.city }}</td>
               <td>{{ item.symptoms }}</td>
@@ -96,18 +91,18 @@ export default {
       info: null,
       allPatients: [],
       searchData: "",
-      flag:false
+      flag: false
     };
   },
   computed: {
-  filteredPatients: function(){
-    let filtered= this.allPatients.filter(value=>{
-      return value.name.match(new RegExp(this.search,"i"));//?case insensative, happen anywhere
-    });
-    return filtered.sort((a,b)=>{
-     return a.name-b.name;
+    filteredPatients: function() {
+      let filtered = this.allPatients.filter(value => {
+        return value.name.match(new RegExp(this.search, "i")); //?case insensative, happen anywhere
       });
-  }
+      return filtered.sort((a, b) => {
+        return a.name - b.name;
+      });
+    }
   },
   mounted() {
     axios
@@ -120,32 +115,26 @@ export default {
         console.log("Error: ", err);
       });
   },
-  
-    patientSearch() {
-      axios
-        .get("/api/patients")
-        .then(
-          response => (
-            (this.info = response.data)
-          )
-        );
-      const searchData = this.info;
-      const results = searchData.filter(patient => {
-        return patient.name.toLowerCase() === this.search.toLowerCase();
-      });
-      this.patients = results;
-      this.flag=true;
-    },
+
+  patientSearch() {
+    axios.get("/api/patients").then(response => (this.info = response.data));
+    const searchData = this.info;
+    const results = searchData.filter(patient => {
+      return patient.name.toLowerCase() === this.search.toLowerCase();
+    });
+    this.patients = results;
+    this.flag = true;
+  },
   methods: {
     deletePatient(btnID) {
       axios.delete(`/api/patient/${btnID}`)
       .then(response => {
         console.log("response: ", response);
+        this.$router.push("/secure"); // this does not work :(
       })    
       .catch(function(error) {
         console.log("error: ", error);
       });
-      location.reload(); // reloads to login page!!!
     }
   }
 };
@@ -153,21 +142,54 @@ export default {
 
 
 <style>
+/* container */
 #secure {
   background-color: #ffffff;
   border: 1px solid #cccccc;
   padding: 20px;
-  margin-top: 10px;
+  margin-top: 10%;
 }
+
+.logo-two {
+  width: 42px;
+  display: block;
+  float: right;
+}
+
+/* Patient Search text */
+h4 {
+  text-align: center;
+}
+
+/* If patient not found text */
+h5 {
+  font-size: 16px !important;
+}
+
+/* column names */
+.table-responsive {
+  margin-top: 5%;
+}
+/* ------------------------------- */
+/* table data styling */
 .single-patient {
   width: 250px;
   border: 3px solid black;
 }
+
 li {
   list-style-type: none;
 }
+
 td,
 th {
   padding-left: 15px;
+}
+
+body {
+  background: url("../assets/covid-bkgrd.jpg");
+  /* background-size: 100%; */
+  background-repeat: repeat;
+  /* text-align: center; */
 }
 </style>
